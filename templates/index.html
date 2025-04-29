@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assessment Manager</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css">
+    <style>
+        body {
+            padding: 20px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+        .chat-container {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .chat-message {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 5px;
+        }
+        .user-message {
+            background-color: #e3f2fd;
+            text-align: right;
+            margin-left: 20%;
+        }
+        .bot-message {
+            background-color: #f1f1f1;
+            text-align: left;
+            margin-right: 20%;
+        }
+        .feedback-content {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 0;
+            height: 100%;
+            background-color: #f8f9fa;
+            padding: 0;
+            overflow-x: hidden;
+            transition: 0.3s;
+            z-index: 1000;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+        }
+        .sidebar.open {
+            width: 500px;
+            padding: 20px;
+        }
+        .sidebar-content {
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .sidebar.open .sidebar-content {
+            opacity: 1;
+        }
+        .sidebar-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1001;
+        }
+        #templateTextArea {
+            height: 400px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <!-- Add this block at the top of the body -->
+
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="mb-0">Assessment Manager</h1>
+            <div>
+                <button id="enableChatbotBtn" class="btn btn-secondary me-2">Enable Chatbot</button>
+                <button class="btn btn-outline-primary me-2" id="sidebarToggle">
+                    <span id="toggleBtnText">Edit Template</span>
+                </button>
+                <button id="resetAllBtn" class="btn btn-danger">Reset All</button>
+            </div>
+        </div>
+        
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-info">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <!-- Assessment Brief Upload Section -->
+        <div class="section">
+            <h2>1. Upload Assessment Brief</h2>
+            {% if brief_filename %}
+            <div style="margin-bottom: 1em;">
+                <strong>Uploaded Brief:</strong>
+                <a href="/brief/{{ brief_filename }}" target="_blank">{{ brief_filename }}</a>
+            </div>
+            {% endif %}
+            <form action="/upload_brief" method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="brief" class="form-label">Upload PDF Assessment Brief:</label>
+                    <input type="file" class="form-control" id="brief" name="brief" accept=".pdf" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Upload Brief</button>
+            </form>
+        </div>
+        
+        <!-- Student Reports Upload Section -->
+        <div class="section">
+            <h2>2. Upload Student Reports</h2>
+            <form action="/upload_reports" method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="reports" class="form-label">Upload ZIP File Containing Reports:</label>
+                    <input type="file" class="form-control" id="reports" name="reports" accept=".zip" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Upload Reports</button>
+            </form>
+        </div>
+        
+        <!-- Reports List and Analysis Section -->
+        <div class="section">
+            <h2>3. View and Analyze Reports</h2>
+            <form id="reportActionForm" method="post">
+                <div class="mb-3">
+                    <button type="button" id="analyzeSelectedBtn" class="btn btn-success me-2">Analyze Selected</button>
+                    <button type="button" id="deleteSelectedBtn" class="btn btn-danger">Delete Selected</button>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAll"></th>
+                                <th>Folder Name</th>
+                                <th>Upload Date</th>
+                                <th>Files</th>
+                                <th>Actions</th>
+                                <th>Feedback</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in reports %}
+                            <tr>
+                                <td><input type="checkbox" name="selected_reports" value="{{ report.id }}" class="report-checkbox"></td>
+                                <td>{{ report.folder_name }}</td>
+                                <td>{{ report.upload_date }}</td>
+                                <td>
+                                    <ul class="list-unstyled">
+                                        {% for file in report.files %}
+                                        <li><a href="/uploads/{{ file.path }}" target="_blank">{{ file.name }}</a></li>
+                                        {% endfor %}
+                                    </ul>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-success analyze-btn" data-report-id="{{ report.id }}">Analyze</button>
+                                    <form action="/delete_report/{{ report.id }}" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                                    </form>
+                                </td>
+                                <td class="feedback-cell">{{ report.feedback|replace('\n', '<br>')|safe }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Chatbot Section -->
+        <div class="section" id="chatbotSection" style="display:none;">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h2 class="mb-0">Chat with Documents</h2>
+                <button class="btn btn-sm btn-outline-secondary" id="closeChatbotBtn" title="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="chat-container" id="chatMessages">
+                <div class="chat-message bot-message">
+                    Hello! I can answer questions about the assessment brief and student reports. How can I help you today?
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" id="chatInput" placeholder="Ask a question...">
+                <button class="btn btn-primary" id="sendButton">Send</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-content">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h3 id="sidebarTitle" class="mb-0">Edit Prompt Template</h3>
+                <button class="btn btn-sm btn-outline-secondary" id="closeSidebarBtn" title="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <p class="text-muted" id="sidebarDescription">Customize the template used to generate the context prompt from the assessment brief.</p>
+            <div class="mb-3">
+                <div class="btn-group mb-2 w-100" role="group" aria-label="Switch template/context">
+                    <button type="button" class="btn btn-outline-primary active" id="editTemplateBtn">Prompt Template</button>
+                    <button type="button" class="btn btn-outline-secondary" id="editContextBtn">Context File</button>
+                </div>
+                <textarea class="form-control" id="templateTextArea" rows="15"></textarea>
+            </div>
+            <div class="d-flex justify-content-between">
+                <button class="btn btn-primary" id="saveTemplateBtn">Save</button>
+                <button class="btn btn-secondary" id="closeTemplateBtn">Close</button>
+            </div>
+            <div class="mt-3" id="templateSaveStatus"></div>
+            <div class="mt-4" id="templateVarsBlock">
+                <h5>Template Variables:</h5>
+                <p><code>{brief_content}</code> - The content of the assessment brief</p>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Select all checkbox
+            $("#selectAll").change(function() {
+                $(".report-checkbox").prop('checked', $(this).prop('checked'));
+            });
+            
+            // Analyze single report
+            $(".analyze-btn").click(function() {
+                const reportId = $(this).data('report-id');
+                analyzeReport(reportId);
+            });
+            
+            // Analyze selected reports
+            $("#analyzeSelectedBtn").click(function() {
+                const selectedReports = $("input[name='selected_reports']:checked");
+                if (selectedReports.length === 0) {
+                    alert("Please select at least one report to analyze.");
+                    return;
+                }
+                
+                selectedReports.each(function() {
+                    analyzeReport($(this).val());
+                });
+            });
+            
+            // Delete selected reports
+            $("#deleteSelectedBtn").click(function() {
+                const selectedReports = $("input[name='selected_reports']:checked");
+                if (selectedReports.length === 0) {
+                    alert("Please select at least one report to delete.");
+                    return;
+                }
+                
+                if (confirm(`Are you sure you want to delete ${selectedReports.length} report(s)?`)) {
+                    selectedReports.each(function() {
+                        const reportId = $(this).val();
+                        $.post(`/delete_report/${reportId}`, function() {
+                            location.reload();
+                        });
+                    });
+                }
+            });
+            
+            // Chatbot functionality
+            $("#sendButton").click(sendChatMessage);
+            $("#chatInput").keypress(function(e) {
+                if (e.which === 13) {
+                    sendChatMessage();
+                }
+            });
+            
+            // Sidebar toggle
+            let currentEditMode = 'template'; // 'template' or 'context'
+            $("#sidebarToggle").click(function() {
+                const sidebar = $("#sidebar");
+                const isOpen = sidebar.hasClass("open");
+                if (isOpen) {
+                    sidebar.removeClass("open");
+                    $("#toggleBtnText").text("Edit Template");
+                } else {
+                    sidebar.addClass("open");
+                    $("#toggleBtnText").text("Hide Template");
+                    loadEditContent();
+                }
+            });
+            // Switch between template/context
+            $("#editTemplateBtn").click(function() {
+                currentEditMode = 'template';
+                $(this).addClass('active btn-outline-primary').removeClass('btn-outline-secondary');
+                $("#editContextBtn").removeClass('active btn-outline-primary').addClass('btn-outline-secondary');
+                $("#sidebarTitle").text("Edit Prompt Template");
+                $("#sidebarDescription").text("Customize the template used to generate the context prompt from the assessment brief.");
+                $("#templateVarsBlock").show();
+                loadEditContent();
+            });
+            $("#editContextBtn").click(function() {
+                currentEditMode = 'context';
+                $(this).addClass('active btn-outline-primary').removeClass('btn-outline-secondary');
+                $("#editTemplateBtn").removeClass('active btn-outline-primary').addClass('btn-outline-secondary');
+                $("#sidebarTitle").text("Edit Context File");
+                $("#sidebarDescription").text("Edit the current context used for report analysis.");
+                $("#templateVarsBlock").hide();
+                loadEditContent();
+            });
+            // Save button
+            $("#saveTemplateBtn").click(function() {
+                const content = $("#templateTextArea").val();
+                saveEditContent(content);
+            });
+            function loadEditContent() {
+                if (currentEditMode === 'template') {
+                    $.get("/get_template", function(data) {
+                        $("#templateTextArea").val(data.template_content);
+                    });
+                } else {
+                    $.get("/get_context", function(data) {
+                        $("#templateTextArea").val(data.context_content);
+                    });
+                }
+            }
+            function saveEditContent(content) {
+                if (currentEditMode === 'template') {
+                    $.ajax({
+                        url: "/save_template",
+                        type: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify({ template_content: content }),
+                        success: function(response) {
+                            $("#templateSaveStatus").html('<div class="alert alert-success">Template saved successfully!</div>');
+                            setTimeout(function() { $("#templateSaveStatus").html(''); }, 3000);
+                        },
+                        error: function(xhr) {
+                            let msg = 'Error saving template.';
+                            if (xhr.responseJSON && xhr.responseJSON.error) msg = xhr.responseJSON.error;
+                            $("#templateSaveStatus").html('<div class="alert alert-danger">'+msg+'</div>');
+                        }
+                    });
+                } else {
+                    $.ajax({
+                        url: "/save_context",
+                        type: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify({ context_content: content }),
+                        success: function(response) {
+                            $("#templateSaveStatus").html('<div class="alert alert-success">Context saved successfully!</div>');
+                            setTimeout(function() { $("#templateSaveStatus").html(''); }, 3000);
+                        },
+                        error: function() {
+                            $("#templateSaveStatus").html('<div class="alert alert-danger">Error saving context.</div>');
+                        }
+                    });
+                }
+            }
+            
+            function analyzeReport(reportId) {
+                const feedbackContainer = $(`#feedback-${reportId}`);
+                feedbackContainer.html('<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Loading...</span></div> Analyzing...');
+                
+                $.ajax({
+                    url: `/analyze_report/${reportId}`,
+                    type: 'POST',
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            feedbackContainer.html(`<div class="feedback-content">${response.feedback}</div>`);
+                        } else {
+                            feedbackContainer.html(`<div class="text-danger">Error: ${response.message}</div>`);
+                        }
+                    },
+                    error: function() {
+                        feedbackContainer.html('<div class="text-danger">Error occurred during analysis</div>');
+                    }
+                });
+            }
+            
+            function sendChatMessage() {
+                const message = $("#chatInput").val().trim();
+                if (message === '') return;
+                
+                // Add user message to chat
+                $("#chatMessages").append(`
+                    <div class="chat-message user-message">
+                        ${message}
+                    </div>
+                `);
+                
+                // Clear input
+                $("#chatInput").val('');
+                
+                // Add loading indicator
+                const loadingId = new Date().getTime();
+                $("#chatMessages").append(`
+                    <div class="chat-message bot-message" id="loading-${loadingId}">
+                        <div class="spinner-border spinner-border-sm" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        Thinking...
+                    </div>
+                `);
+                
+                // Scroll to bottom
+                $("#chatMessages").scrollTop($("#chatMessages")[0].scrollHeight);
+                
+                // Send to backend
+                $.ajax({
+                    url: '/chat',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ question: message }),
+                    success: function(response) {
+                        // Remove loading indicator
+                        $(`#loading-${loadingId}`).remove();
+                        
+                        // Add bot response
+                        $("#chatMessages").append(`
+                            <div class="chat-message bot-message">
+                                ${response.answer}
+                            </div>
+                        `);
+                        
+                        // Scroll to bottom
+                        $("#chatMessages").scrollTop($("#chatMessages")[0].scrollHeight);
+                    },
+                    error: function() {
+                        // Remove loading indicator
+                        $(`#loading-${loadingId}`).remove();
+                        
+                        // Add error message
+                        $("#chatMessages").append(`
+                            <div class="chat-message bot-message text-danger">
+                                Sorry, there was an error processing your request.
+                            </div>
+                        `);
+                        
+                        // Scroll to bottom
+                        $("#chatMessages").scrollTop($("#chatMessages")[0].scrollHeight);
+                    }
+                });
+            }
+            
+            // Reset All functionality
+            $('#resetAllBtn').click(function() {
+                if (confirm('Are you sure you want to reset everything? This will delete all data, uploads, and vectorstores.')) {
+                    $.post('/reset_all', function(data) {
+                        if (data.status === 'success') {
+                            location.reload();
+                        } else {
+                            alert('Reset failed: ' + (data.message || 'Unknown error'));
+                        }
+                    }).fail(function() {
+                        alert('Reset failed: server error.');
+                    });
+                }
+            });
+            
+            // Enable Chatbot functionality
+            $('#enableChatbotBtn').click(function() {
+                $('#chatbotSection').show();
+                $(this).hide();
+            });
+            
+            // Sidebar close button
+            $("#closeSidebarBtn, #closeTemplateBtn").click(function() {
+                $("#sidebar").removeClass("open");
+                $("#toggleBtnText").text("Edit Template");
+            });
+            // Chatbot close button
+            $("#closeChatbotBtn").click(function() {
+                $('#chatbotSection').hide();
+                $('#enableChatbotBtn').show();
+            });
+        });
+    </script>
+</body>
+</html>

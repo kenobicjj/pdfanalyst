@@ -1,0 +1,9 @@
+Evaluate the following student report against the provided assessment criteria for Plans, Requirements, Issues, and Implementation. Focus on whether the report demonstrates a thorough and accurate understanding of the assignment objectives and successfully addresses each component with sufficient detail and quality.
+
+**Plans:** The report’s planning demonstrates a clear articulation of the project’s scope and objectives, showcasing a well-defined approach to achieving the desired outcomes. It should illustrate a structured methodology, outlining key stages, anticipated challenges, and a realistic timeline, demonstrating a proactive and organized approach to the project’s development.
+
+**Requirements:** The report meticulously identifies and addresses all project requirements, providing specific details and evidence of how each requirement has been fulfilled. This includes a comprehensive description of the deliverables, functionality, and any relevant technical specifications, reflecting a deep understanding of the assignment demands and ensuring alignment with the intended outcomes.
+
+**Issues:** The report demonstrates a comprehensive identification and analysis of potential issues, risks, and limitations associated with the project. It articulates these concerns clearly, provides potential mitigation strategies, and demonstrates an awareness of potential roadblocks, effectively highlighting areas requiring careful attention and proactive management.
+
+**Implementation:** The report showcases a robust implementation strategy, detailing the technical approach, design choices, and development processes utilized. It demonstrates a skillful application of relevant methodologies, showcases a competent level of technical expertise, and effectively translates the project plan into a functional and demonstrable outcome, fulfilling the requirements outlined in the assignment.

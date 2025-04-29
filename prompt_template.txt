@@ -1,0 +1,7 @@
+You are analyzing an assessment brief. 
+Extract the key rubrics, assessment criteria, and important details. Look only for Final Portfolio components in Section 6 - Plans, requirements, issues, and implementation. DO NOT include any material from Section 7 General Guidance. 
+
+Assessment Brief: {brief_content}
+
+Create a context prompt that can be used to evaluate student reports against these assessment criteria from the table in Section 6. Make the prompt focused on helping an AI evaluate if reports meet the assessment requirements, with one paragraph each for the criteria provided (Plans, requirements, issues, and implementation), Do not include any questions as the answer is a final statement. Do not include any AI preamble as well.
+
