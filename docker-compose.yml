@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  pdfanalyst:
+    build: .
+    image: pdfanalyst:latest
+    container_name: pdfanalyst
+    ports:
+      - "1234:5000"
+    volumes:
+      # Persist uploads, briefs, and database between restarts
+      - ./uploads:/app/uploads
+      - ./brief:/app/brief
+      - ./vectorstore:/app/vectorstore
+      - ./brief_vectorstore:/app/brief_vectorstore
+      - ./reports.db:/app/reports.db
+    environment:
+      - HOST=0.0.0.0
+      # Add any environment variables here if needed
+      # Example: FLASK_ENV: development
+      # Example: PYTHONUNBUFFERED: 1
+      # Example: TZ: UTC
+      # FLASK_ENV: development
+      # PYTHONUNBUFFERED: 1
+      # TZ: UTC
+    restart: unless-stopped 

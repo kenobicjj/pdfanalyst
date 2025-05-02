@@ -8,71 +8,77 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-.hypothesis/
-.pytest_cache/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# VS Code
-.vscode/
-
-# Environments
-.env
-.venv
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
+*.egg-info/
+dist/
+build/
+.eggs/
 
-# PyCharm
+# Flask cache and instance folders
+instance/
+.webassets-cache
+
+# SQLite database files
+*.sqlite3
+*.db
+*.db-journal
+
+# Uploaded files and generated folders
+uploads/
+brief/
+vectorstore/
+brief_vectorstore/
+tmp/
+*.zip
+
+# Context and template files (if generated)
+context.txt
+prompt_template.txt
+
+# Logs and local config
+*.log
+*.pot
+*.mo
+*.pid
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# VSCode and IDE settings
+.vscode/
 .idea/
+*.sublime-project
+*.sublime-workspace
 
-# macOS
+# Docker
+*.pid
+*.seed
+*.pid.lock
+docker-compose.override.yml
+
+# System files
 .DS_Store
-
-# Windows
 Thumbs.db
-ehthumbs.db
-Desktop.ini
 
-# PDFAnalyst specific
-*.pdf
-output/
-logs/
+# Python test cache
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# GitHub Actions artifacts
+.github/workflows/*.yml
+
+# Ignore secrets (if any)
+secrets.env
+.env
+.env.*
+
+# Ignore pip cache
+pip-wheel-metadata/
+__pypackages__/
