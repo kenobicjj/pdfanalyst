@@ -2,6 +2,10 @@
 
 This Flask application is designed to help manage and analyze assessment briefs and student reports. It uses RAG (Retrieval-Augmented Generation) with Ollama's Gemma3 model to process PDFs and generate feedback.
 
+![PDF Analyser Class Diagram](images/pdfanalyst_class.png)
+![PDF Analyser Sequence Diagram](images/pdfanalyst-sequence.png)
+![PDF Analyser screenshot](imagespdfanalyser.jpg)
+
 ## Features
 
 1. **Assessment Brief Upload**
