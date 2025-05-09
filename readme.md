@@ -4,7 +4,7 @@ This Flask application is designed to help manage and analyze assessment briefs 
 
 ![PDF Analyser Class Diagram](images/pdfanalyst_class.png)
 ![PDF Analyser Sequence Diagram](images/pdfanalyst-sequence.png)
-![PDF Analyser screenshot](imagespdfanalyser.jpg)
+![PDF Analyser screenshot](images/pdfanalyser.jpg)
 
 ## Features
 
